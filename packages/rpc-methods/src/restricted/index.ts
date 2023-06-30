@@ -12,6 +12,7 @@ import {
   GetBip44EntropyMethodHooks,
 } from './getBip44Entropy';
 import { getEntropyBuilder, GetEntropyHooks } from './getEntropy';
+import { getLocaleBuilder, GetLocaleMethodHooks } from './getLocale';
 import { invokeSnapBuilder, InvokeSnapMethodHooks } from './invokeSnap';
 import {
   manageAccountsBuilder,
@@ -35,7 +36,8 @@ export type RestrictedMethodHooks = DialogMethodHooks &
   InvokeSnapMethodHooks &
   ManageStateMethodHooks &
   NotifyMethodHooks &
-  ManageAccountsMethodHooks;
+  ManageAccountsMethodHooks &
+  GetLocaleMethodHooks;
 
 export const restrictedMethodPermissionBuilders = {
   [dialogBuilder.targetName]: dialogBuilder,
@@ -47,6 +49,7 @@ export const restrictedMethodPermissionBuilders = {
   [manageStateBuilder.targetName]: manageStateBuilder,
   [notifyBuilder.targetName]: notifyBuilder,
   [manageAccountsBuilder.targetName]: manageAccountsBuilder,
+  [getLocaleBuilder.targetName]: getLocaleBuilder,
 } as const;
 
 export * from './caveats';
