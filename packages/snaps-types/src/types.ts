@@ -20,4 +20,5 @@ export type {
   OnRpcRequestHandler,
   OnTransactionHandler,
   OnTransactionResponse,
+  ComponentState,
 } from '@metamask/snaps-utils';

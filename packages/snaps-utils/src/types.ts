@@ -202,3 +202,8 @@ export type SnapsPermissionRequest = {
     ];
   };
 };
+
+export type ComponentState = Record<
+  string,
+  string | Record<string, string | null> | null
+>;

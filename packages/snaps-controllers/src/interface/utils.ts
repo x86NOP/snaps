@@ -1,9 +1,5 @@
 import { Component, NodeType } from '@metamask/snaps-ui';
-
-export type ComponentState = Record<
-  string,
-  string | Record<string, string | null> | null
->;
+import { ComponentState } from '@metamask/snaps-utils';
 
 export const constructState = (
   state: ComponentState,
@@ -26,7 +22,7 @@ export const constructState = (
     };
   }
   if (type === NodeType.Input) {
-    return { ...state, [component.name]: null };
+    return { ...state, [component.name]: component.value ?? '' };
   }
 
   return state;
