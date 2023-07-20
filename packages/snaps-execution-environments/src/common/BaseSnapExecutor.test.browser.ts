@@ -9,6 +9,7 @@ import {
 } from '@metamask/snaps-utils/test-utils';
 import { assertIsJsonRpcSuccess, isPlainObject } from '@metamask/utils';
 
+import { TimerActions } from './endowments/longRunningJob';
 import {
   getMockedStreamProvider,
   walkAndSearch,
@@ -1643,6 +1644,69 @@ describe('BaseSnapExecutor', () => {
       // case that is suitable for security auditing of this type.
       const provider = getMockedStreamProvider();
       expect(Object.getPrototypeOf(provider)).toStrictEqual({});
+    });
+  });
+
+  it('supports long running job endowment', async () => {
+    const CODE = `
+      module.exports.onRpcRequest = ({ request }) => {
+        let counter = 0;
+
+        // Do some synchronous work
+        const jobCallback = () => {
+          while (counter < 10) {
+            counter = counter + 1;
+          }
+        }
+
+        longRunningJob(jobCallback, { timeWait: 30 })
+
+        return counter;
+      };
+    `;
+
+    const executor = new TestSnapExecutor();
+    await executor.executeSnap(1, MOCK_SNAP_ID, CODE, ['longRunningJob']);
+
+    expect(await executor.readCommand()).toStrictEqual({
+      jsonrpc: '2.0',
+      id: 1,
+      result: 'OK',
+    });
+
+    await executor.writeCommand({
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'snapRpc',
+      params: [
+        MOCK_SNAP_ID,
+        HandlerType.OnRpcRequest,
+        MOCK_ORIGIN,
+        { jsonrpc: '2.0', method: 'foo', params: ['whatever'] },
+      ],
+    });
+
+    expect(await executor.readCommand()).toStrictEqual({
+      jsonrpc: '2.0',
+      method: 'TimerPauseRequest',
+      params: {
+        timeWait: 30,
+        timerAction: TimerActions.Pause,
+      },
+    });
+
+    expect(await executor.readCommand()).toStrictEqual({
+      jsonrpc: '2.0',
+      method: 'TimerPauseRequest',
+      params: {
+        timerAction: TimerActions.Restart,
+      },
+    });
+
+    expect(await executor.readCommand()).toStrictEqual({
+      id: 2,
+      jsonrpc: '2.0',
+      result: 10,
     });
   });
 });
